@@ -3,7 +3,6 @@
 namespace poldixd\MatomoAIBotTracking\Middleware;
 
 use Closure;
-use DeviceDetector\DeviceDetector;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\RequestException;
@@ -14,6 +13,28 @@ use Throwable;
 
 class MatomoAIBotTracking
 {
+    protected const AI_BOT_USER_AGENT_NEEDLES = [
+        'ai2bot',
+        'amazonbot',
+        'anthropic-ai',
+        'applebot-extended',
+        'bytespider',
+        'ccbot',
+        'chatgpt-user',
+        'claudebot',
+        'claude-web',
+        'cohere-ai',
+        'diffbot',
+        'facebookbot',
+        'google-extended',
+        'gptbot',
+        'meta-externalagent',
+        'oai-searchbot',
+        'omgili',
+        'perplexitybot',
+        'youbot',
+    ];
+
     public function __construct(
         protected HttpFactory $http,
     ) {}
@@ -63,11 +84,9 @@ class MatomoAIBotTracking
             return false;
         }
 
-        if (! $request->userAgent()) {
-            return false;
-        }
+        $userAgent = $request->userAgent();
 
-        if (! $this->isAiBot($request->userAgent())) {
+        if (! $userAgent) {
             return false;
         }
 
@@ -76,6 +95,10 @@ class MatomoAIBotTracking
         }
 
         if ($request->is('livewire/*', '_debugbar/*', 'telescope*')) {
+            return false;
+        }
+
+        if (! $this->isAiBot($userAgent)) {
             return false;
         }
 
@@ -133,13 +156,12 @@ class MatomoAIBotTracking
 
     protected function isAiBot(string $userAgent): bool
     {
-        $dd = new DeviceDetector($userAgent);
-        $dd->parse();
+        $userAgent = strtolower($userAgent);
 
-        if ($dd->isBot()) {
-            $botInfo = $dd->getBot();
-
-            return $botInfo && isset($botInfo['category']) && str_starts_with($botInfo['category'], 'AI ');
+        foreach (self::AI_BOT_USER_AGENT_NEEDLES as $needle) {
+            if (str_contains($userAgent, $needle)) {
+                return true;
+            }
         }
 
         return false;
