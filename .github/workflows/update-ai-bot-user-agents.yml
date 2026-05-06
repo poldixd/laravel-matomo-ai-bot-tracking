@@ -1,0 +1,42 @@
+name: update-ai-bot-user-agents
+
+on:
+    schedule:
+        -   cron: '17 3 1 * *'
+    workflow_dispatch:
+
+env:
+    AI_BOT_SOURCE_URL: https://raw.githubusercontent.com/ai-robots-txt/ai.robots.txt/main/robots.json
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    update:
+        runs-on: ubuntu-latest
+
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v4
+
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: '8.5'
+                    coverage: none
+
+            -   name: Update AI bot user-agent list
+                run: php scripts/update-ai-bot-user-agents.php
+
+            -   name: Create pull request
+                uses: peter-evans/create-pull-request@v7
+                with:
+                    branch: automation/update-ai-bot-user-agents
+                    delete-branch: true
+                    title: Update AI bot user agent list
+                    commit-message: Update AI bot user agent list
+                    body: |
+                        Update `AI_BOT_USER_AGENT_NEEDLES` from the configured AI bot source.
+
+                        Source: `${{ env.AI_BOT_SOURCE_URL }}`
