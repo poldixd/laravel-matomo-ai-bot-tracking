@@ -3,8 +3,8 @@
 Track AI bot requests from a Laravel app in Matomo.
 
 This package adds a middleware for Laravel. It uses
-[`matomo/device-detector`](https://github.com/matomo-org/device-detector) to detect
-AI bots and sends these requests to Matomo with `recMode=1`.
+a fast user-agent string check to detect AI bots and sends these requests to
+Matomo with `recMode=1`.
 
 ## What It Does
 
@@ -13,7 +13,7 @@ when all of these things are true:
 
 - The request is a `GET` request.
 - The request has a `User-Agent` header.
-- Matomo Device Detector detects the user agent as an AI bot.
+- The user agent contains a known AI bot identifier.
 - The request is not asking for JSON.
 - The path is not for Livewire, Debugbar, or Telescope.
 

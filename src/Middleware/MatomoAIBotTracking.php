@@ -3,7 +3,6 @@
 namespace poldixd\MatomoAIBotTracking\Middleware;
 
 use Closure;
-use DeviceDetector\DeviceDetector;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\RequestException;
@@ -14,6 +13,144 @@ use Throwable;
 
 class MatomoAIBotTracking
 {
+    protected const AI_BOT_USER_AGENT_NEEDLES = [
+        'addsearchbot',
+        'ai2bot',
+        'ai2bot-deepresearcheval',
+        'ai2bot-dolma',
+        'aihitbot',
+        'amazon-kendra',
+        'amazonbot',
+        'amazonbuyforme',
+        'amzn-searchbot',
+        'amzn-user',
+        'andibot',
+        'anomura',
+        'anthropic-ai',
+        'apifybot',
+        'apifywebsitecontentcrawler',
+        'applebot',
+        'applebot-extended',
+        'aranet-searchbot',
+        'atlassian-bot',
+        'awario',
+        'azureai-searchbot',
+        'bedrockbot',
+        'bigsur.ai',
+        'bravebot',
+        'brightbot-1.0',
+        'buddybot',
+        'bytespider',
+        'ccbot',
+        'channel3bot',
+        'chatglm-spider',
+        'chatgpt-agent',
+        'chatgpt-user',
+        'claude-searchbot',
+        'claude-user',
+        'claude-web',
+        'claudebot',
+        'cloudflare-autorag',
+        'cloudvertexbot',
+        'cohere-ai',
+        'cohere-training-data-crawler',
+        'cotoyogi',
+        'crawl4ai',
+        'crawlspace',
+        'datenbank-crawler',
+        'deepseekbot',
+        'devin',
+        'diffbot',
+        'duckassistbot',
+        'echobot-bot',
+        'echoboxbot',
+        'exabot',
+        'facebookbot',
+        'facebookexternalhit',
+        'factset_spyderbot',
+        'firecrawlagent',
+        'friendlycrawler',
+        'gemini-deep-research',
+        'google-agent',
+        'google-cloudvertexbot',
+        'google-extended',
+        'google-firebase',
+        'google-notebooklm',
+        'googleagent-mariner',
+        'googleother',
+        'googleother-image',
+        'googleother-video',
+        'gptbot',
+        'iaskbot',
+        'iaskspider',
+        'iboubot',
+        'icc-crawler',
+        'imagesiftbot',
+        'imagespider',
+        'img2dataset',
+        'isscyberriskcrawler',
+        'kagi-fetcher',
+        'kangaroo-bot',
+        'klaviyoaibot',
+        'kunatocrawler',
+        'laion-huggingface-processor',
+        'laiondownloader',
+        'lcc',
+        'linerbot',
+        'linguee-bot',
+        'linkupbot',
+        'manus-user',
+        'meta-externalagent',
+        'meta-externalfetcher',
+        'meta-webindexer',
+        'mistralai-user',
+        'mycentralaiscraperbot',
+        'nagetbot',
+        'netestate-imprint-crawler',
+        'newsai',
+        'notebooklm',
+        'novaact',
+        'oai-searchbot',
+        'omgili',
+        'omgilibot',
+        'openai',
+        'operator',
+        'pangubot',
+        'panscient',
+        'panscient.com',
+        'perplexity-user',
+        'perplexitybot',
+        'petalbot',
+        'phindbot',
+        'poggio-citations',
+        'poseidon-research-crawler',
+        'qualifiedbot',
+        'quillbot',
+        'quillbot.com',
+        'sbintuitionsbot',
+        'scrapy',
+        'semrushbot-ocob',
+        'semrushbot-swa',
+        'shapbot',
+        'sidetrade-indexer-bot',
+        'tavilybot',
+        'terracotta',
+        'thinkbot',
+        'tiktokspider',
+        'timpibot',
+        'twinagent',
+        'velenpublicwebcrawler',
+        'wardbot',
+        'webzio-extended',
+        'wpbot',
+        'wrtnbot',
+        'yak',
+        'yandexadditional',
+        'yandexadditionalbot',
+        'youbot',
+        'zanistabot',
+    ];
+
     public function __construct(
         protected HttpFactory $http,
     ) {}
@@ -63,11 +200,9 @@ class MatomoAIBotTracking
             return false;
         }
 
-        if (! $request->userAgent()) {
-            return false;
-        }
+        $userAgent = $request->userAgent();
 
-        if (! $this->isAiBot($request->userAgent())) {
+        if (! $userAgent) {
             return false;
         }
 
@@ -76,6 +211,10 @@ class MatomoAIBotTracking
         }
 
         if ($request->is('livewire/*', '_debugbar/*', 'telescope*')) {
+            return false;
+        }
+
+        if (! $this->isAiBot($userAgent)) {
             return false;
         }
 
@@ -133,13 +272,12 @@ class MatomoAIBotTracking
 
     protected function isAiBot(string $userAgent): bool
     {
-        $dd = new DeviceDetector($userAgent);
-        $dd->parse();
+        $userAgent = strtolower($userAgent);
 
-        if ($dd->isBot()) {
-            $botInfo = $dd->getBot();
-
-            return $botInfo && isset($botInfo['category']) && str_starts_with($botInfo['category'], 'AI ');
+        foreach (self::AI_BOT_USER_AGENT_NEEDLES as $needle) {
+            if (str_contains($userAgent, $needle)) {
+                return true;
+            }
         }
 
         return false;
