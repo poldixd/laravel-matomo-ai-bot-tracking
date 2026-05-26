@@ -30,7 +30,7 @@ jobs:
                 run: php scripts/update-ai-bot-user-agents.php
 
             -   name: Create pull request
-                uses: peter-evans/create-pull-request@v7
+                uses: peter-evans/create-pull-request@v8
                 with:
                     branch: automation/update-ai-bot-user-agents
                     delete-branch: true
