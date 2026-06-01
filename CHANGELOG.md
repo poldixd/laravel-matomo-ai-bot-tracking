@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-matomo-ai-bot-tracking` will be documented in this file
 
+## 0.2.1 - 2026-06-01
+
+- Updated User Agents
+
 ## 0.2.0 - 2026-05-06
 
 - Replaced DeviceDetector with fast user-agent string matching for AI bot detection.
