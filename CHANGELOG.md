@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-matomo-ai-bot-tracking` will be documented in this file
 
+## 0.2.2 - 2026-11-04
+
+- Updated User Agents
+
 ## 0.2.1 - 2026-06-01
 
 - Updated User Agents
